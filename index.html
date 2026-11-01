@@ -473,6 +473,8 @@ async function mkpdf(mode){
  if(ps2.length){HEAD([["Person",40],["Status",300],["Amount",555,"r"]]);ps2.forEach(function(p){ROW([[p,40],[net[p]>0?"To receive":"To pay",300],[rp(Math.abs(net[p])),555,"r"]])})}else ROW([["No pending loans",40]]);
  var now=new Date().toLocaleString("en-IN");PG.forEach(function(st,i){ST=st;T(40,822,"Generated "+now,8,0,0,[.5,.55,.6]);T(555,822,"Page "+(i+1)+" of "+PG.length,8,0,"r",[.5,.55,.6])});
  var buf=buildPdf(PG.map(function(p){return p.join("\n")})),dl=null;
+ var nat=window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform();
+ if(nat){try{var bin="",u8=new Uint8Array(buf);for(var q=0;q<u8.length;q+=8192)bin+=String.fromCharCode.apply(null,u8.subarray(q,q+8192));var w=await Capacitor.Plugins.Filesystem.writeFile({path:"ledger-"+P.key+".pdf",data:btoa(bin),directory:"CACHE"});await Capacitor.Plugins.Share.share({title:"My Ledger report",url:w.uri,dialogTitle:"Save or share PDF"});toast("PDF ready")}catch(e){if(!/cancel/i.test(String(e&&e.message||e)))toast("Could not save the PDF")}return}
  try{dl=window.claude&&await window.claude.use("downloads")}catch(e){}
  if(!dl){try{var u=URL.createObjectURL(new Blob([buf],{type:"application/pdf"})),a=document.createElement("a");a.href=u;a.download="ledger-"+P.key+".pdf";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);toast("PDF ready")}catch(e){toast("PDF saving is not available in this view")}return}
  try{await dl.save({filename:"ledger-"+P.key+".pdf",data:buf});toast("PDF ready")}catch(e){if(!e||e.code!="declined")toast("Could not save the PDF")}}
@@ -514,7 +516,7 @@ function lkInit(){
  if(hp())lshow("unlock");else if(!sk)lshow("setup1")}
 (function(){var v=null;try{v=localStorage.getItem("ledger_theme")}catch(e){}if(v)document.documentElement.setAttribute("data-theme",v)})();
 $("thBtn").onclick=function(){var cur=document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("ledger_theme",n)}catch(e){}toast(n=="dark"?"Dark mode":"Light mode")};
-try{if("serviceWorker" in navigator&&location.protocol.indexOf("http")==0)navigator.serviceWorker.register("sw.js").catch(function(){})}catch(e){}
+try{if("serviceWorker" in navigator&&location.protocol.indexOf("http")==0&&!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()))navigator.serviceWorker.register("sw.js").catch(function(){})}catch(e){}
 var mcb=null;
 function ask(msg,inp,cb){$("mCh").hidden=true;$("mMsg").textContent=msg;var i=$("mIn");i.hidden=!inp;if(inp)i.value=inp.v;$("mdl").hidden=false;mcb=cb;if(inp)i.focus()}
 $("mNo").onclick=function(){$("mdl").hidden=true;mcb=null};
