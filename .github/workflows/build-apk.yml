@@ -76,4 +76,3 @@ jobs:
           gh release create "apk-${{ github.run_number }}" My-Ledger.apk \
             --title "My Ledger APK #${{ github.run_number }}" \
             --notes "Download My-Ledger.apk below and install it on your phone."
-            
