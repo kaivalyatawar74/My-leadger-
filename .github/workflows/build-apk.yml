@@ -26,7 +26,11 @@ jobs:
       - name: Prepare web files
         run: |
           mkdir -p www
-          cp index.html manifest.webmanifest sw.js icon-192.png icon-512.png icon-maskable-512.png www/
+          cp index.html www/
+          for f in manifest.webmanifest sw.js icon-192.png icon-512.png icon-maskable-512.png; do
+            if [ -f "$f" ]; then cp "$f" www/; fi
+          done
+          ls -la www
 
       - name: Create Android project
         run: |
@@ -38,19 +42,18 @@ jobs:
 
       - name: Set app icon
         run: |
-          for d in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
-            IFS=: read n l f <<< "$d"
-            dir=android/app/src/main/res/mipmap-$n
-            convert icon-512.png -resize ${l}x${l} $dir/ic_launcher.png
-            convert icon-512.png -resize ${l}x${l} $dir/ic_launcher_round.png
-            convert icon-maskable-512.png -resize ${f}x${f} $dir/ic_launcher_foreground.png
-          done
-          cat > android/app/src/main/res/values/ic_launcher_background.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <color name="ic_launcher_background">#04211C</color>
-          </resources>
-          EOF
+          if [ -f icon-512.png ] && [ -f icon-maskable-512.png ]; then
+            for d in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
+              IFS=: read n l f <<< "$d"
+              dir=android/app/src/main/res/mipmap-$n
+              convert icon-512.png -resize ${l}x${l} $dir/ic_launcher.png
+              convert icon-512.png -resize ${l}x${l} $dir/ic_launcher_round.png
+              convert icon-maskable-512.png -resize ${f}x${f} $dir/ic_launcher_foreground.png
+            done
+            printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '<color name="ic_launcher_background">#04211C</color>' '</resources>' > android/app/src/main/res/values/ic_launcher_background.xml
+          else
+            echo "Icon files not found, using default icon"
+          fi
 
       - name: Build debug APK
         working-directory: android
@@ -73,3 +76,4 @@ jobs:
           gh release create "apk-${{ github.run_number }}" My-Ledger.apk \
             --title "My Ledger APK #${{ github.run_number }}" \
             --notes "Download My-Ledger.apk below and install it on your phone."
+            
