@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>My Ledger</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b7a62">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap">
 <style>
 :root{--bg:#f6f5f1;--card:#fff;--tx:#1d1d1b;--mut:#77756e;--line:#e7e5de;--in:#1f9d63;--out:#e0533d;--acc:#2b5fd9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -508,6 +514,7 @@ function lkInit(){
  if(hp())lshow("unlock");else if(!sk)lshow("setup1")}
 (function(){var v=null;try{v=localStorage.getItem("ledger_theme")}catch(e){}if(v)document.documentElement.setAttribute("data-theme",v)})();
 $("thBtn").onclick=function(){var cur=document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("ledger_theme",n)}catch(e){}toast(n=="dark"?"Dark mode":"Light mode")};
+try{if("serviceWorker" in navigator&&location.protocol.indexOf("http")==0)navigator.serviceWorker.register("sw.js").catch(function(){})}catch(e){}
 var mcb=null;
 function ask(msg,inp,cb){$("mCh").hidden=true;$("mMsg").textContent=msg;var i=$("mIn");i.hidden=!inp;if(inp)i.value=inp.v;$("mdl").hidden=false;mcb=cb;if(inp)i.focus()}
 $("mNo").onclick=function(){$("mdl").hidden=true;mcb=null};
