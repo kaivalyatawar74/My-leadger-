@@ -117,8 +117,9 @@ textarea{width:100%;border:1px solid var(--line);background:var(--card);color:va
 #lpic{width:120px;height:120px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 14px;border:3px solid var(--line)}
 #lock .box{text-align:center}
 .w{position:relative}
-#pinBtn,#thBtn{position:absolute;right:16px;top:8px;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-size:18px}
-#thBtn{right:62px}
+#pinBtn,#thBtn,#setBtn{position:absolute;right:16px;top:8px;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-size:18px}
+#setBtn{right:62px}
+#thBtn{right:108px}
 #lock{position:fixed;inset:0;z-index:80;overflow:auto;color:#fff;text-align:center;font-family:Inter,system-ui,sans-serif;
  background:radial-gradient(ellipse at 0 0,rgba(245,179,1,.35),transparent 42%),radial-gradient(ellipse at 100% 100%,rgba(245,179,1,.38),transparent 42%),#050505;
  padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px))}
@@ -208,6 +209,14 @@ html{-webkit-text-size-adjust:100%}
 #lock{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .bl{pointer-events:none}
 #bls{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#set{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(40px + env(safe-area-inset-bottom,0px))}
+.setw{max-width:480px;margin:0 auto}
+.seth{display:flex;align-items:center;gap:12px;margin:6px 0 16px}
+.seth button{width:40px;height:40px;border-radius:50%;border:0;background:var(--card);box-shadow:0 2px 8px rgba(16,35,30,.1);font-size:18px;color:var(--tx)}
+.seth b{font-family:Sora,Inter,system-ui,sans-serif;font-size:22px}
+.srow{display:flex;align-items:center;gap:14px;width:100%;background:var(--card);border:0;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 2px rgba(16,35,30,.06),0 6px 18px rgba(16,35,30,.06);color:var(--tx);font-family:inherit;font-size:16px;font-weight:600;text-align:left}
+.srow i{font-style:normal;width:38px;height:38px;border-radius:12px;background:var(--soft);display:grid;place-items:center;font-size:19px}
+.srow span{flex:1}.srow em{color:var(--mut);font-style:normal;font-size:22px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:#0f172a;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:90}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -215,8 +224,8 @@ html{-webkit-text-size-adjust:100%}
 <body>
 <div class="w">
   <h1><small>Personal finance</small>My Ledger</h1>
-  <button id="pinBtn" aria-label="PIN lock">🔒</button><button id="thBtn" aria-label="Theme">🌗</button>
-  <div class="tg" id="pm"><button data-m="d">Day</button><button data-m="m" class="on">Month</button><button data-m="y">Year</button></div>
+  <button id="pinBtn" aria-label="PIN lock">🔒</button><button id="setBtn" aria-label="Settings">⚙️</button><button id="thBtn" aria-label="Theme">🌗</button>
+  <div class="tg" id="pm"><button data-m="m" class="on">Month</button><button data-m="d">Day</button><button data-m="y">Year</button></div>
   <div class="mon"><button id="pv">‹</button><b id="ml"></b><button id="nx">›</button></div>
   <div class="bal">
     <small>Total Balance (all accounts)</small>
@@ -228,20 +237,7 @@ html{-webkit-text-size-adjust:100%}
     <div class="mood" id="mood"></div>
   </div>
 
-  <div class="card"><h2>🏦 My Accounts</h2>
-    <div class="row2" style="margin-bottom:8px"><div><span>💵 Cash</span><strong id="acash">₹0</strong></div><div><span>🏦 Online</span><strong id="aon">₹0</strong></div></div>
-    <div class="emp" style="padding:0 0 8px">Total: <b id="atot"></b></div>
-    <div id="alist"></div>
-    <div class="sub">Add account</div>
-    <div class="tg"><button id="nC" class="on">Cash</button><button id="nO">Online</button></div>
-    <input id="aName" type="text" placeholder="Account name (e.g. Wallet, SBI, PhonePe)">
-    <input id="aBal" type="number" inputmode="decimal" placeholder="Current balance ₹">
-    <button class="add" id="aAdd">Add account</button>
-    <div class="sub">Transfer between accounts (ATM, UPI)</div>
-    <div class="row2"><select id="trF" style="flex:1"></select><select id="trT" style="flex:1"></select></div>
-    <input id="trAmt" type="number" inputmode="decimal" placeholder="Amount ₹">
-    <button class="add" id="trGo">Transfer</button>
-  </div>
+
 
   <div class="card">
     <div class="tg"><button id="tOut" class="on">Expense</button><button id="tIn">Income</button></div>
@@ -254,7 +250,57 @@ html{-webkit-text-size-adjust:100%}
     <button class="add" id="add">Add entry</button>
   </div>
 
-  <div class="card"><h2>🤝 Loans (Lent &amp; Borrowed)</h2>
+  
+
+
+
+<div class="card"><h2>Spending by category</h2><div class="dn" id="dn"></div><div id="cats"></div>
+  <div class="sub">Set budget (monthly, shown in Month / Year view)</div>
+  <div class="row2"><select id="bC" style="flex:1.4;margin:0"></select><input id="bA" type="number" inputmode="decimal" placeholder="Limit ₹ (0 = remove)" style="flex:1;margin:0"></div>
+  <button class="add" id="bGo" style="margin-top:10px">Save budget</button></div>
+
+
+
+  
+</div>
+<div id="set" hidden><div class="setw">
+ <div class="seth"><button id="setBack" aria-label="Back">←</button><b id="setT">Settings</b></div>
+ <div id="setMenu">
+  <button class="srow" data-s="pin"><i>🔒</i><span>Change PIN &amp; Fingerprint</span><em>›</em></button>
+  <button class="srow" data-s="bk"><i>💾</i><span>Backup &amp; Restore</span><em>›</em></button>
+  <button class="srow" data-s="accts"><i>🏦</i><span>My Accounts</span><em>›</em></button>
+  <button class="srow" data-s="trans"><i>🔁</i><span>Transfer between accounts</span><em>›</em></button>
+  <button class="srow" data-s="acc"><i>➕</i><span>Add account</span><em>›</em></button>
+  <button class="srow" data-s="loan"><i>🤝</i><span>Loans (Lent &amp; Borrowed)</span><em>›</em></button>
+  <button class="srow" data-s="all"><i>📋</i><span>All loans</span><em>›</em></button>
+  <button class="srow" data-s="txn"><i>🧾</i><span>Transactions</span><em>›</em></button>
+  <button class="srow" data-s="sum"><i>📊</i><span>Day-wise Summary</span><em>›</em></button>
+  <button class="srow" data-s="pdf"><i>📄</i><span>PDF Report</span><em>›</em></button>
+ </div>
+ <div id="setPages">
+  <div class="sp" data-s="bk" hidden><div class="card"><h2>💾 Backup &amp; Restore</h2>
+  <div class="emp" id="bkI" style="padding:0 0 6px;text-align:left;font-weight:600"></div>
+  <div class="emp" style="padding:0 0 12px;text-align:left;font-size:13px">One tap saves everything: entries, accounts, transfers, loans, repayments and budgets. Keep the file in Drive or WhatsApp. On a new phone, tap Restore and choose that file.</div>
+  <textarea id="bk" rows="4" hidden></textarea><input id="bf" type="file" accept=".json,application/json,text/plain" hidden>
+  <div class="row2"><button class="add sm" id="bkMake">Save backup</button><button class="add sm" id="bkRest">Restore</button></div></div></div>
+  <div class="sp" data-s="accts" hidden><div class="card"><h2>🏦 My Accounts</h2>
+    <div class="row2" style="margin-bottom:8px"><div><span>💵 Cash</span><strong id="acash">₹0</strong></div><div><span>🏦 Online</span><strong id="aon">₹0</strong></div></div>
+    <div class="emp" style="padding:0 0 8px">Total: <b id="atot"></b></div>
+    <div id="alist"></div>
+  </div></div>
+  <div class="sp" data-s="sum" hidden><div class="card" id="brkc"><h2 id="brkh">Summary</h2><div id="mch"></div><div id="brk"></div></div><div class="emp" id="brkn" hidden>Choose Month or Year on the front page to see the day-wise / month-wise summary.</div></div>
+  <div class="sp" data-s="trans" hidden><div class="card"><h2>🔁 Transfer between accounts</h2>
+    <div class="row2"><select id="trF" style="flex:1"></select><select id="trT" style="flex:1"></select></div>
+    <input id="trAmt" type="number" inputmode="decimal" placeholder="Amount ₹">
+    <button class="add" id="trGo">Transfer</button>
+  </div></div>
+  <div class="sp" data-s="acc" hidden><div class="card"><h2>➕ Add account</h2>
+    <div class="tg"><button id="nC" class="on">Cash</button><button id="nO">Online</button></div>
+    <input id="aName" type="text" placeholder="Account name (e.g. Wallet, SBI, PhonePe)">
+    <input id="aBal" type="number" inputmode="decimal" placeholder="Current balance ₹">
+    <button class="add" id="aAdd">Add account</button>
+  </div></div>
+  <div class="sp" data-s="loan" hidden><div class="card"><h2>🤝 Loans (Lent &amp; Borrowed)</h2>
   <div class="row2" style="margin-bottom:12px"><div><span>To receive</span><strong class="in" id="uget">₹0</strong></div><div><span>To pay</span><strong class="out" id="uowe">₹0</strong></div></div>
   <div class="tg"><button id="uG" class="on">I lent</button><button id="uO">I borrowed</button></div>
   <input id="uName" type="text" placeholder="Person name">
@@ -264,25 +310,16 @@ html{-webkit-text-size-adjust:100%}
   <input id="uNote" type="text" placeholder="Note (optional)">
   <button class="add" id="uAdd">Add loan</button>
   <div class="sub">Balance by person</div><div id="upl"></div>
-  <div class="sub">All loans</div><div id="ul"></div>
-</div>
-
-<div class="card" id="brkc"><h2 id="brkh">Summary</h2><div id="mch"></div><div id="brk"></div></div>
-
-<div class="card"><h2>Spending by category</h2><div class="dn" id="dn"></div><div id="cats"></div>
-  <div class="sub">Set budget (monthly, shown in Month / Year view)</div>
-  <div class="row2"><select id="bC" style="flex:1.4;margin:0"></select><input id="bA" type="number" inputmode="decimal" placeholder="Limit ₹ (0 = remove)" style="flex:1;margin:0"></div>
-  <button class="add" id="bGo" style="margin-top:10px">Save budget</button></div>
-  <div class="card"><h2>Transactions</h2>
+  </div></div>
+  <div class="sp" data-s="all" hidden><div class="card"><h2>📋 All loans</h2><div id="ul"></div></div></div>
+  <div class="sp" data-s="txn" hidden><div class="card"><h2>Transactions</h2>
   <input id="q" type="search" placeholder="Search note, name, category (all time)">
   <div class="tg" id="tf"><button data-f="a" class="on">All</button><button data-f="out">Expense</button><button data-f="in">Income</button></div>
-  <div class="emp" id="qi" style="padding:0 0 6px" hidden></div><div id="list"></div></div>
-  <div class="card"><h2>📄 PDF Report</h2>
+  <div class="emp" id="qi" style="padding:0 0 6px" hidden></div><div id="list"></div></div></div>
+  <div class="sp" data-s="pdf" hidden><div class="card"><h2>📄 PDF Report</h2>
   <div class="emp" id="pdfi" style="padding:0 0 10px;text-align:left"></div>
-  <div class="row2" id="pdfc"><button class="add sm" data-p="d">Day PDF</button><button class="add sm" data-p="m">Month PDF</button><button class="add sm" data-p="y">Year PDF</button></div></div>
-
-  
-</div>
+  <div class="row2" id="pdfc"><button class="add sm" data-p="d">Day PDF</button><button class="add sm" data-p="m">Month PDF</button><button class="add sm" data-p="y">Year PDF</button></div></div></div>
+ </div></div></div>
 <div id="mdl" class="mdl" hidden><div class="box"><p id="mMsg"></p><div class="ch" id="mCh" hidden></div><input id="mIn" type="number" inputmode="decimal" hidden><div class="mb"><button id="mNo">No</button><button id="mYes" class="add">Yes</button></div></div></div>
 <div id="lock" hidden><div id="bls"><div class="bl b1"></div><div class="bl b2"></div><div class="bl b3"></div></div><div class="lin">
 <div class="emb"><div class="ring"></div><div class="coin">₹</div></div>
@@ -338,7 +375,7 @@ function render(){
   else{var nd=new Date(Y,view.getMonth()+1,0).getDate();for(var q=1;q<=nd;q++)ls.push([Y+"-"+Mo+"-"+String(q).padStart(2,"0"),q%5==1?String(q):""])}
   ls.forEach(function(l){var v=bk[l[0]];if(v)mx=Math.max(mx,v.i,v.o)});
   $("mch").innerHTML='<div class="ch2">'+ls.map(function(l){var v=bk[l[0]]||{i:0,o:0};return '<div class="cc"><div class="cb"><u style="height:'+(v.i/mx*100)+'%;background:var(--in)"></u><u style="height:'+(v.o/mx*100)+'%;background:var(--out)"></u></div><em>'+l[1]+'</em></div>'}).join("")+'</div><div class="lg"><span><i class="dot" style="background:var(--in)"></i>Income</span><span><i class="dot" style="background:var(--out)"></i>Spent</span></div>'}
- $("brkc").hidden=pm=="d";$("brkh").textContent=pm=="y"?"Month-wise summary":"Day-wise summary";
+ $("brkc").hidden=pm=="d";$("brkn").hidden=pm!="d";$("brkh").textContent=pm=="y"?"Month-wise summary":"Day-wise summary";
  $("brk").innerHTML='<div class="rw hd"><span>'+(pm=="y"?"Month":"Date")+'</span><span>Income</span><span>Spent</span><span>Net</span></div>'+(bl.join("")||'<div class="emp">No entries</div>');
  var i=0,o=0,by={};
  m.forEach(function(x){if(x.t=="in")i+=x.a;else{o+=x.a;by[x.c]=(by[x.c]||0)+x.a}});
@@ -517,6 +554,27 @@ function lkInit(){
 (function(){var v=null;try{v=localStorage.getItem("ledger_theme")}catch(e){}if(v)document.documentElement.setAttribute("data-theme",v)})();
 $("thBtn").onclick=function(){var cur=document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("ledger_theme",n)}catch(e){}toast(n=="dark"?"Dark mode":"Light mode")};
 try{if("serviceWorker" in navigator&&location.protocol.indexOf("http")==0&&!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()))navigator.serviceWorker.register("sw.js").catch(function(){})}catch(e){}
+var SP="";
+function setOpen(x){SP=x||"";$("setMenu").hidden=!!x;Array.prototype.forEach.call($("setPages").children,function(p){p.hidden=p.dataset.s!=x});var T={trans:"Transfer",acc:"Add account",loan:"Loans",all:"All loans",txn:"Transactions",pdf:"PDF Report",accts:"My Accounts",sum:"Day-wise Summary",bk:"Backup & Restore"};$("setT").textContent=x?T[x]:"Settings";$("set").scrollTop=0}
+$("setBtn").onclick=function(){setOpen("");$("set").hidden=false};
+$("setBack").onclick=function(){if(SP)setOpen("");else $("set").hidden=true};
+$("setMenu").onclick=function(e){var b=e.target.closest(".srow");if(!b)return;var x=b.dataset.s;if(x=="pin"){$("set").hidden=true;$("pinBtn").onclick();return}setOpen(x)};
+function bkData(){return JSON.stringify({app:"My Ledger",v:1,saved:new Date().toISOString(),tx:tx,ud:ud,ac:ac,xf:xf,bud:bud})}
+function bkFn(){return "my-ledger-backup-"+today()+".json"}
+function bkInfo(){var t=null;try{t=localStorage.getItem("ledger_lastbk")}catch(e){}$("bkI").textContent=t?"Last backup: "+new Date(t).toLocaleString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"}):"No backup taken yet"}
+function bkMark(){try{localStorage.setItem("ledger_lastbk",new Date().toISOString())}catch(e){}bkInfo()}
+function bkTxt(t,m){$("bk").hidden=false;$("bk").value=t;$("bk").select();toast(m)}
+async function bkSave(){var t=bkData(),nat=window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(),dl=null;
+ if(nat){try{var w=await Capacitor.Plugins.Filesystem.writeFile({path:bkFn(),data:t,directory:"CACHE",encoding:"utf8"});await Capacitor.Plugins.Share.share({title:"My Ledger backup",url:w.uri,dialogTitle:"Save backup to Drive, Files or WhatsApp"});bkMark();toast("Backup ready")}catch(e){if(!/cancel/i.test(String(e&&e.message||e)))bkTxt(t,"Could not save the file. Copy this text instead")}return}
+ try{dl=window.claude&&await window.claude.use("downloads")}catch(e){}
+ if(dl){try{await dl.save({filename:bkFn(),data:t});bkMark();toast("Backup saved")}catch(e){if(!e||e.code!="declined")bkTxt(t,"Could not save the file. Copy this text instead")}return}
+ try{var u=URL.createObjectURL(new Blob([t],{type:"application/json"})),a=document.createElement("a");a.href=u;a.download=bkFn();document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);bkMark();toast("Backup downloaded")}catch(e){bkTxt(t,"Copy this text and keep it safe")}}
+function bkRestore(txt){var d;try{d=JSON.parse(txt)}catch(e){toast("This is not a valid backup");return}
+ if(!d||!Array.isArray(d.tx)||!Array.isArray(d.ac)){toast("This is not a valid backup");return}
+ ask("Restore this backup? It replaces all data on this phone ("+d.tx.length+" entries).",null,function(){tx=d.tx;ud=d.ud||[];if(d.ac.length)ac=d.ac;xf=d.xf||[];bud=d.bud||{};ud.forEach(function(x){if(!x.pay)x.pay=[]});save();usave();asave();bsave();$("bk").hidden=true;$("bk").value="";render();urender();toast("Backup restored")})}
+$("bkMake").onclick=bkSave;
+$("bkRest").onclick=function(){if(!$("bk").hidden&&$("bk").value.trim()){bkRestore($("bk").value);return}$("bf").click()};
+$("bf").onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){bkRestore(r.result)};r.readAsText(f);this.value=""};
 var mcb=null;
 function ask(msg,inp,cb){$("mCh").hidden=true;$("mMsg").textContent=msg;var i=$("mIn");i.hidden=!inp;if(inp)i.value=inp.v;$("mdl").hidden=false;mcb=cb;if(inp)i.focus()}
 $("mNo").onclick=function(){$("mdl").hidden=true;mcb=null};
@@ -568,7 +626,7 @@ function arender(){var c=0,o=0,h="",opts="";
  var us=$("uAc"),up=us.value;us.innerHTML=opts+'<option value="">No account</option>';if(us.dataset.none=="1")us.value="";else if(up&&ac.some(function(a){return a.id==up}))us.value=up;
  var uc="";Array.prototype.forEach.call(us.options,function(o){uc+='<button data-v="'+o.value+'" class="'+(o.value===us.value?"on":"")+'">'+o.textContent+'</button>'});$("uAcC").innerHTML=uc;
  if(!$("trT").dataset.i){$("trT").selectedIndex=Math.min(1,ac.length-1);$("trT").dataset.i="1"}}
-$("bA").value=bud[$("bC").value]||"";chips();render();urender();lkInit();
+$("bA").value=bud[$("bC").value]||"";chips();render();urender();lkInit();bkInfo();
 </script>
 </body>
 </html>
